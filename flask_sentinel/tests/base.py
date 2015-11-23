@@ -45,6 +45,7 @@ class TestBase(unittest.TestCase):
         self.pw = 'pw'
         self.clientapp = Storage.generate_client()
         self.clientid = self.clientapp.client_id
+        self.clientsecret = self.clientapp.client_secret
         self.user = Storage.save_user("user", self.pw)
         self.username = self.user.username
 
@@ -54,7 +55,7 @@ class TestBase(unittest.TestCase):
         self.man_endpoint = '/testauth/testman'
         self.url = '%s?%s' % (
             self.token_endpoint,
-            'client_id=%s&grant_type=password&username=%s&password=%s'
+            'client_id=%s&client_secret=%s&grant_type=password&username=%s&password=%s'
         )
 
     def tearDown(self):
@@ -73,7 +74,8 @@ class TestBase(unittest.TestCase):
         }
 
     def get_token(self):
-        query = self.url % (self.clientid, self.username, self.pw)
+        query = self.url % (self.clientid, self.clientsecret,
+                            self.username, self.pw)
         r = self.test_client.post(query)
         self.assert200(r.status_code)
         return json.loads(r.get_data())

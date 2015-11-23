@@ -2,8 +2,12 @@
 {% block content %}
     <h1>{{ client.name }}</h1>
     <div class="well">
-        <strong>This app would like to:</strong>
-        {{ scope }}
+        <strong>This app would like to have access to:</strong>
+        <ul>
+            {% for scope in scopes %}
+            <li>{{ scope }}</li>
+            {% endfor %}
+        </ul>
         <form method="post" action={{ request.path }}>
             <button class="btn btn-default" name='confirm' value='no'>Cancel</button>
             <button class="btn btn-primary" name='confirm' value='yes'>Accept</button>

@@ -173,7 +173,7 @@ class Storage(object):
         user_id = user.id
 
         # Make sure there is only one grant token for every (client, user)
-        mongo.db.tokens.remove({'client_id': client_id, 'user_id': user_id})
+        # mongo.db.tokens.remove({'client_id': client_id, 'user_id': user_id})
 
         expires_in = token.get('expires_in')
         expires = datetime.utcnow() + timedelta(seconds=expires_in)
@@ -183,7 +183,7 @@ class Storage(object):
             user_id=user_id,
             token_type=token['token_type'],
             access_token=token['access_token'],
-            refresh_token=token['refresh_token'],
+            refresh_token=token.get('refresh_token', None),
             expires=expires,
         )
 
@@ -255,7 +255,7 @@ class Storage(object):
 
     @staticmethod
     def delete_grant(grant_id):
-        print mongo.db.grants.delete_one({'_id': ObjectId(grant_id)})
+        mongo.db.grants.delete_one({'_id': ObjectId(grant_id)})
 
     @staticmethod
     def all_users():

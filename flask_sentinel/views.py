@@ -43,8 +43,6 @@ def access_token(*args, **kwargs):
     :param *args: Variable length argument list.
     :param **kwargs: Arbitrary keyword arguments.
     """
-    if request.method == 'POST':
-        print '--->', request.form
     return None
 
 

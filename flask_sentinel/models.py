@@ -154,17 +154,18 @@ class Client(BaseModel):
         Presently, only the password and code grant types is allowed.
         """
         return (
-            'authorization_code', 'password',
-            'client_credentials', 'refresh_token',
+            'authorization_code', 'password', 'refresh_token',
         )
 
     @property
     def default_scopes(self):
         """ Returns default scopes associated with the Client. """
-        return ['email']
+        return []
 
     @property
     def default_redirect_uri(self):
+        if not self.redirect_uris:
+            return ''
         return self.redirect_uris[0]
 
 

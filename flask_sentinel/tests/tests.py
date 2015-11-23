@@ -32,15 +32,18 @@ class TestTokenEndpoint(TestBase):
         r = self.test_client.post(self.token_endpoint)
         self.assert400(r.status_code)
 
-        query = self.url % ('notreally', self.username, self.pw)
+        query = self.url % ('notreally', 'notreally',
+                            self.username, self.pw)
         r = self.test_client.post(query)
         self.assert401(r.status_code)
 
-        query = self.url % (self.clientid, 'notreally', self.pw)
+        query = self.url % (self.clientid, 'notreally',
+                            'notreally', self.pw)
         r = self.test_client.post(query)
         self.assert401(r.status_code)
 
-        query = self.url % (self.clientid, self.username, 'notreally')
+        query = self.url % (self.clientid, 'notreally',
+                            self.username, 'notreally')
         r = self.test_client.post(query)
         self.assert401(r.status_code)
 
@@ -121,8 +124,8 @@ class TestStorage(TestBase):
         self.assertIsInstance(client, Client)
         self.assertEqual(client.client_id, self.clientid)
         self.assertEqual(client.client_type, 'public')
-        self.assertEqual(client.allowed_grant_types, ['password',
-                                                      'authorization_code'])
+        self.assertEqual(client.allowed_grant_types,
+            ('authorization_code', 'password', 'refresh_token',))
         self.assertEqual(client.default_scopes, [])
         self.assertEqual(client.default_redirect_uri, '')
 
