@@ -50,6 +50,7 @@ class TestBase(unittest.TestCase):
 
         self.auth_endpoint = '/endpoint'
         self.token_endpoint = '/testauth/testtoken'
+        self.authorize_endpoint = '/testauth/testauthorize'
         self.man_endpoint = '/testauth/testman'
         self.url = '%s?%s' % (
             self.token_endpoint,
@@ -66,6 +67,7 @@ class TestBase(unittest.TestCase):
             'REDIS_URL': 'redis://localhost:6379/0',
             'OAUTH2_PROVIDER_TOKEN_EXPIRES_IN': 999,
             'SENTINEL_TOKEN_URL': '/testtoken',
+            'SENTINEL_AUTHORIZE_URL': '/testauthorize',
             'SENTINEL_MANAGEMENT_URL': '/testman',
             'SENTINEL_ROUTE_PREFIX': '/testauth'
         }

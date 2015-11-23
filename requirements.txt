@@ -1,5 +1,6 @@
 Flask-OAuthlib
 Flask-PyMongo
+Flask-Login
 bcrypt
 pyOpenSSL
 redis

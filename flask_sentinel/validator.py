@@ -20,3 +20,5 @@ class MyRequestValidator(OAuth2RequestValidator):
         self._usergetter = Storage.get_user
         self._tokengetter = Storage.get_token
         self._tokensetter = Storage.save_token
+        self._grantgetter = Storage.get_grant
+        self._grantsetter = Storage.save_grant

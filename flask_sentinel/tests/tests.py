@@ -121,7 +121,8 @@ class TestStorage(TestBase):
         self.assertIsInstance(client, Client)
         self.assertEqual(client.client_id, self.clientid)
         self.assertEqual(client.client_type, 'public')
-        self.assertEqual(client.allowed_grant_types, ['password'])
+        self.assertEqual(client.allowed_grant_types, ['password',
+                                                      'authorization_code'])
         self.assertEqual(client.default_scopes, [])
         self.assertEqual(client.default_redirect_uri, '')
 

@@ -1,70 +1,168 @@
-<!DOCTYPE html>
-<html lang="en">
-    <head>
-        <meta charset="UTF-8" />
-        <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css">
-    </head>
-    <body>
-        <div class="container">
-            <div class="starter-template">
-                <h1>API Management</h1>
-                <p>Use this dashboard to authorize new users and clients to access the API.</p>
-                <div class="well">
-                    <h2>Users</h2>
-                    <p>There are {{ users|length }} authorized users.</p>
-                    <table class="table">
-                        <thead>
-                            <tr>
-                                <th>User ID</th>
-                                <th>Username</th>
-                                <th>Password Hash</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for user in users %}
-                            <tr>
-                                <td>{{ user.id }}</td>
-                                <td>{{ user.username }}</td>
-                                <td>{{ user.hashpw }}</td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                    <h4>Add User</h4>
-                    <p>Create a new authorized API user.</p>
-                    <form method="post" action={{ request.path }}>
-                        <input type="text" name="username" placeholder="username">
-                        <input type="password" name="password" placeholder="password">
-                        <input type="submit" name='submit' value='Add User'>
-                    </form>
+{% extends "base.html" %}
+{% block content %}
+    <h1>API Management</h1>
+    <p>Use this dashboard to authorize new users and clients to access the API.</p>
+    <div class="well">
+        <h2>Users</h2>
+        <p>There are {{ users|length }} authorized users.</p>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>User ID</th>
+                    <th>Username</th>
+                    <th>Password Hash</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for user in users %}
+                <tr>
+                    <td>{{ user.id }}</td>
+                    <td>{{ user.username }}</td>
+                    <td>{{ user.hashpw }}</td>
+                    <td>
+                        <form method="post" action={{ request.path }}>
+                            <input type="hidden" name="action" value="delete_user">
+                            <input type="hidden" name="username" value="{{ user.username }}">
+                            <button type="submit" class="btn btn-danger pull-right"><span class="glyphicon glyphicon-remove" aria-hidden="true"></span></button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <h4>Add User</h4>
+        <p>Create a new authorized API user.</p>
+        <form method="post" action={{ request.path }}>
+            <div class="row">
+                <div class="col-lg-4">
+                    <input type="hidden" name="action" value="add_user">
+                    <input class="form-control" type="text" name="username" placeholder="username">
                 </div>
-                <div class="well">
-                    <h2>Client</h2>
-                    <p>There are {{ clients|length }} authorized clients.</p>
-                    <table class="table">
-                        <thead>
-                            <tr>
-                                <th>Client ID</th>
-                                <th>Type</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for client in clients %}
-                            <tr>
-                                <td>{{ client.client_id }}</td>
-                                <td>{{ client.client_type }}</td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                    <h4>Add Client</h4>
-                    <p>Generate a new client.</p>
-                    <form method="post" action={{ request.path }}>
-                        <input type="submit" name='submit' value='Add Client'>
-                    </form>
+                <div class="col-lg-4">
+                    <input class="form-control" type="password" name="password" placeholder="password">
+                </div>
+                <div class="col-lg-4">
+                    <input class="btn btn-primary" type="submit" name='submit' value='Add User'>
                 </div>
             </div>
-        </div>
-        <!-- /.container -->
-    </body>
-</html>
+        </form>
+    </div>
+    <div class="well">
+        <h2>Clients</h2>
+        <p>There are {{ clients|length }} authorized clients.</p>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Client Name</th>
+                    <th>Client ID</th>
+                    <th>Client Secret</th>
+                    <th>Type</th>
+                    <th>Redirect URIs</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for client in clients %}
+                <tr>
+                    <td>{{ client.name }}</td>
+                    <td>{{ client.client_id }}</td>
+                    <td>{{ client.client_secret }}</td>
+                    <td>{{ client.client_type }}</td>
+                    <td>{{ client.redirect_uris }}</td>
+                    <td>
+                        <form method="post" action={{ request.path }}>
+                            <input type="hidden" name="action" value="delete_client">
+                            <input type="hidden" name="client_id" value="{{ client.client_id }}">
+                            <button type="submit" class="btn btn-danger pull-right"><span class="glyphicon glyphicon-remove" aria-hidden="true"></span></button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <h4>Add Client</h4>
+        <p>Generate a new client.</p>
+        <form method="post" action={{ request.path }}>
+            <div class="row">
+                <div class="col-lg-4">
+                    <input type="hidden" name="action" value="add_client">
+                    <input class="form-control" type="text" name="name" placeholder="name">
+                </div>
+                <div class="col-lg-8">
+                    <input class="form-control" type="text" name="description" placeholder="description">
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-lg-4">
+                    <input class="form-control" type="text" name="redirect_uris" placeholder="redirect uris">
+                </div>
+                <div class="col-lg-4">
+                    <input class="btn btn-primary" type="submit" name='submit' value='Add Client'>
+                </div>
+            </div>
+        </form>
+    </div>
+    <div class="well">
+        <h2>Tokens</h2>
+        <p>There are {{ tokens|length }} tokens.</p>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Client ID</th>
+                    <th>User ID</th>
+                    <th>Access Token</th>
+                    <th>Refresh Token</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for token in tokens %}
+                <tr>
+                    <td>{{ token.client_id }}</td>
+                    <td>{{ token.user_id }}</td>
+                    <td>{{ token.access_token }}</td>
+                    <td>{{ token.refresh_token }}</td>
+                    <td>
+                        <form method="post" action={{ request.path }}>
+                            <input type="hidden" name="action" value="delete_token">
+                            <input type="hidden" name="access_token" value="{{ token.access_token }}">
+                            <button type="submit" class="btn btn-danger pull-right"><span class="glyphicon glyphicon-remove" aria-hidden="true"></span></button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <div class="well">
+        <h2>Grants</h2>
+        <p>There are {{ grants|length }} grants.</p>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Client ID</th>
+                    <th>User ID</th>
+                    <th>Code</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for grant in grants %}
+                <tr>
+                    <td>{{ grant.client_id }}</td>
+                    <td>{{ grant.user_id }}</td>
+                    <td>{{ grant.code }}</td>
+                    <td>
+                        <form method="post" action={{ request.path }}>
+                            <input type="hidden" name="action" value="delete_grant">
+                            <input type="hidden" name="grant_id" value="{{ grant.id }}">
+                            <button type="submit" class="btn btn-danger pull-right"><span class="glyphicon glyphicon-remove" aria-hidden="true"></span></button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% endblock %}

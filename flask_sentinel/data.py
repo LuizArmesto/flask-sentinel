@@ -9,12 +9,15 @@
 import inspect
 from collections import namedtuple
 from datetime import datetime, timedelta
+from bson.objectid import ObjectId
 
 import bcrypt
 from werkzeug.security import gen_salt
 
+from flask.ext.login import current_user
+
 from .core import mongo, redis
-from .models import Client, User, Token
+from .models import Client, User, Token, Grant
 
 
 # TODO use SONManipulator instead of custom de/serializers perhaps?
@@ -135,9 +138,39 @@ class Storage(object):
         return token
 
     @staticmethod
+    def get_grant(client_id, code):
+        """ Loads a grant from mongodb and returns it as a Grant or None.
+        """
+        json = mongo.db.grants.find_one({'client_id': client_id, 'code': code})
+        grant = _from_json(json, Grant)
+
+        json = mongo.db.users.find_one({id.collection: grant.user_id})
+        grant.user = _from_json(json, User)
+
+        return grant
+
+    @staticmethod
+    def save_grant(client_id, code, request, *args, **kwargs):
+        user_id = current_user.id
+        # decide the expires time yourself
+        expires = datetime.utcnow() + timedelta(seconds=100)
+        grant = Grant(
+            client_id=client_id,
+            user_id=user_id,
+            code=code['code'],
+            redirect_uri=request.redirect_uri,
+            scopes=request.scopes,
+            expires=expires
+        )
+
+        grant.id = mongo.db.grants.insert(_to_json(grant))
+        return grant
+
+    @staticmethod
     def save_token(token, request, *args, **kwargs):
         client_id = request.client.client_id
-        user_id = request.user.id
+        user = request.user or current_user
+        user_id = user.id
 
         # Make sure there is only one grant token for every (client, user)
         mongo.db.tokens.remove({'client_id': client_id, 'user_id': user_id})
@@ -164,10 +197,14 @@ class Storage(object):
         mongo.db.tokens.update(spec, _to_json(token), upsert=True)
 
     @staticmethod
-    def generate_client():
+    def generate_client(name=None, description=None, redirect_uris=None):
         client = Client()
         client.client_id = gen_salt(40)
+        client.client_secret = gen_salt(40)
         client.client_type = "public"
+        client.name = name
+        client.description = description
+        client.redirect_uris = redirect_uris
         mongo.db.clients.insert(_to_json(client))
         return client
 
@@ -180,6 +217,47 @@ class Storage(object):
         return user
 
     @staticmethod
+    def delete_user(username):
+        user = mongo.db.users.find_one({'username': username})
+        user = _from_json(user, User)
+        mongo.db.tokens.delete_many({'user_id': user.id})
+        mongo.db.users.delete_one({'_id': user.id})
+        return user
+
+    @staticmethod
+    def delete_client(client_id):
+        client = mongo.db.clients.find_one({'client_id': client_id})
+        client = _from_json(client, Client)
+        mongo.db.tokens.delete_many({'client_id': client.id})
+        mongo.db.clients.delete_one({'_id': client.id})
+        return client
+
+    @staticmethod
+    def delete_token(access_token=None, refresh_token=None):
+        """ Loads a token from mongob and returns it as a Token or None.
+        """
+        if not (access_token or refresh_token):
+            return None
+
+        if access_token:
+            field, value = 'access_token', access_token
+        elif refresh_token:
+            field, value = 'refresh_token', refresh_token
+
+        json = mongo.db.tokens.find_one({field: value})
+        token = _from_json(json, Token)
+        if token is None:
+            return None
+
+        mongo.db.tokens.delete_one({'_id': token.id})
+
+        return token
+
+    @staticmethod
+    def delete_grant(grant_id):
+        print mongo.db.grants.delete_one({'_id': ObjectId(grant_id)})
+
+    @staticmethod
     def all_users():
         json = list(mongo.db.users.find())
         return _from_json(json, User, as_list=True)
@@ -188,3 +266,13 @@ class Storage(object):
     def all_clients():
         json = list(mongo.db.clients.find())
         return _from_json(json, Client, as_list=True)
+
+    @staticmethod
+    def all_tokens():
+        json = list(mongo.db.tokens.find())
+        return _from_json(json, Token, as_list=True)
+
+    @staticmethod
+    def all_grants():
+        json = list(mongo.db.grants.find())
+        return _from_json(json, Grant, as_list=True)

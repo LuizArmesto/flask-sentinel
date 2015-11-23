@@ -7,9 +7,11 @@
     :license: BSD, see LICENSE for more details.
 """
 from flask.ext.pymongo import PyMongo
+from flask.ext.login import LoginManager
 from flask_oauthlib.provider import OAuth2Provider
 from redis import StrictRedis
 
 mongo = PyMongo()
 oauth = OAuth2Provider()
 redis = StrictRedis()
+login_manager = LoginManager()
